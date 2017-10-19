@@ -40,6 +40,8 @@ module Fastlane
 
       platform, lane = choose_lane(ff, platform) unless lane
 
+      FastlaneCore.session.is_fastfile = true
+
       # xcodeproj has a bug in certain versions that causes it to change directories
       # and not return to the original working directory
       # https://github.com/CocoaPods/Xcodeproj/issues/426
@@ -70,6 +72,54 @@ module Fastlane
       finish_fastlane(ff, duration, e)
 
       return ff
+    end
+
+    def self.skip_docs?
+      Helper.test? || FastlaneCore::Env.truthy?("FASTLANE_SKIP_DOCS")
+    end
+
+    # All the finishing up that needs to be done
+    def self.finish_fastlane(ff, duration, error)
+      # Finished with all the lanes
+      Fastlane::JUnitGenerator.generate(Fastlane::Actions.executed_actions)
+      print_table(Fastlane::Actions.executed_actions)
+
+      Fastlane::PluginUpdateManager.show_update_status
+
+      if error
+        UI.error 'fastlane finished with errors'
+        raise error
+      elsif duration > 5
+        UI.success "fastlane.tools just saved you #{duration} minutes! 🎉"
+      else
+        UI.success 'fastlane.tools finished successfully 🎉'
+      end
+    end
+
+    # Print a table as summary of the executed actions
+    def self.print_table(actions)
+      return if actions.count == 0
+
+      require 'terminal-table'
+
+      rows = []
+      actions.each_with_index do |current, i|
+        is_error_step = !current[:error].to_s.empty?
+
+        name = current[:name][0..60]
+        name = name.red if is_error_step
+        index = i + 1
+        index = "💥" if is_error_step
+        rows << [index, name, current[:time].to_i]
+      end
+
+      puts ""
+      puts Terminal::Table.new(
+        title: "fastlane summary".green,
+        headings: ["Step", "Action", "Time (in s)"],
+        rows: FastlaneCore::PrintTable.transform_output(rows)
+      )
+      puts ""
     end
 
     # Lane chooser if user didn't provide a lane
