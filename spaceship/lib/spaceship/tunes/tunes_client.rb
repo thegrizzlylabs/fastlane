@@ -29,6 +29,7 @@ module Spaceship
             'iphone4' => [1136, 640],
             'iphone6' => [1334, 750],
             'iphone6Plus' => [2208, 1242],
+            'iphone58' => [2436, 1125],
             'ipad' => [1024, 768],
             'ipadPro' => [2732, 2048]
         }
@@ -887,7 +888,7 @@ module Spaceship
       build_info = get_build_info_for_review(app_id: app_id, train: train, build_number: build_number, platform: platform)
       # Now fill in the values provided by the user
 
-      # First the localised values:
+      # First the localized values:
       build_info['details'].each do |current|
         current['whatsNew']['value'] = changelog if changelog
         current['description']['value'] = description if description
