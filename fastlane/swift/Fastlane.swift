@@ -299,10 +299,6 @@ func importCertificate(keychainName: String, keychainPath: String? = nil, keycha
   let command = RubyCommand(commandID: "", methodName: "import_certificate", className: nil, args: [RubyCommand.Argument(name: "keychain_name", value: keychainName), RubyCommand.Argument(name: "keychain_path", value: keychainPath), RubyCommand.Argument(name: "keychain_password", value: keychainPassword), RubyCommand.Argument(name: "certificate_path", value: certificatePath), RubyCommand.Argument(name: "certificate_password", value: certificatePassword), RubyCommand.Argument(name: "log_output", value: logOutput)])
   _ = runner.executeCommand(command)
 }
-func importFromGit(url: String, branch: String = "HEAD", path: String = "fastlane/Fastfile", version: String? = nil) {
-  let command = RubyCommand(commandID: "", methodName: "import_from_git", className: nil, args: [RubyCommand.Argument(name: "url", value: url), RubyCommand.Argument(name: "branch", value: branch), RubyCommand.Argument(name: "path", value: path), RubyCommand.Argument(name: "version", value: version)])
-  _ = runner.executeCommand(command)
-}
 @discardableResult func incrementBuildNumber(buildNumber: String? = nil, xcodeproj: String? = nil) -> String {
   let command = RubyCommand(commandID: "", methodName: "increment_build_number", className: nil, args: [RubyCommand.Argument(name: "build_number", value: buildNumber), RubyCommand.Argument(name: "xcodeproj", value: xcodeproj)])
   return runner.executeCommand(command)

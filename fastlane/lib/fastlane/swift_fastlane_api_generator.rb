@@ -3,6 +3,7 @@ require 'fastlane/swift_fastlane_function.rb'
 module Fastlane
   class SwiftFastlaneAPIGenerator
     attr_accessor :tools_option_files
+    attr_accessor :actions_not_supported
     attr_accessor :action_options_to_ignore
     attr_accessor :target_output_path
 
@@ -16,6 +17,8 @@ module Fastlane
       # with default implementation we can use in the Fastlane.swift API if people want to use
       # <Toolname>file.swift files.
       self.tools_option_files = TOOL_CONFIG_FILES.map { |config_file| config_file.downcase.chomp("file") }.to_set
+
+      self.actions_not_supported = ["import", "import_from_git"].to_set
 
       self.action_options_to_ignore = {
 
@@ -40,6 +43,8 @@ module Fastlane
       generated_tool_classes = []
       generated_tool_protocols = []
       ActionsList.all_actions do |action|
+        next if self.actions_not_supported.include?(action.action_name)
+
         swift_function = process_action(action: action)
         if defined?(swift_function.class_name)
           generated_tool_classes << swift_function.class_name
