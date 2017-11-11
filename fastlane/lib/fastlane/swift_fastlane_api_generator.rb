@@ -101,7 +101,7 @@ module Fastlane
       parsing_functions = 'func parseArray(fromString: String, function: String = #function) -> [String] {
   verbose(message: "parsing an Array from data: \(fromString), from function: \(function)")
   let potentialArray: String
-  if fromString.characters.count < 2 {
+  if fromString.count < 2 {
     potentialArray = "[\(fromString)]"
   } else {
     potentialArray = fromString
@@ -113,7 +113,7 @@ module Fastlane
 func parseDictionary(fromString: String, function: String = #function) -> [String : String] {
   verbose(message: "parsing an Array from data: \(fromString), from function: \(function)")
   let potentialDictionary: String
-  if fromString.characters.count < 2 {
+  if fromString.count < 2 {
     verbose(message: "Dictionary value too small: \(fromString), from function: \(function)")
     potentialDictionary = "{}"
   } else {
