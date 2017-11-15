@@ -104,7 +104,7 @@ module Frameit
     def complex_framing
       background = generate_background
 
-      self.space_to_device = vertical_frame_padding
+      self.space_to_device = vertical_frame_title_padding
 
       if fetch_config['title']
         background = put_title_into_background(background, fetch_config['stack_title'])
@@ -116,7 +116,7 @@ module Frameit
 
         # Decrease the size of the framed screenshot to fit into the defined padding + background
         frame_width = background.width - horizontal_frame_padding * 2
-        frame_height = background.height - space_to_device - vertical_frame_padding
+        frame_height = background.height - space_to_device - vertical_frame_title_padding
 
         if fetch_config['show_complete_frame']
           # calculate the final size of the screenshot to resize in one go
@@ -138,20 +138,32 @@ module Frameit
       image
     end
 
-    # Horizontal adding around the frames
+    # Horizontal padding around the frames
     def horizontal_frame_padding
-      padding = fetch_config['padding']
-      if padding.kind_of?(String) && padding.split('x').length == 2
-        padding = padding.split('x')[0].to_i
-      end
-      return scale_padding(padding)
+      padding_from_config('padding', :horizontal)
     end
 
-    # Vertical adding around the frames
+    # Vertical padding around the frames
     def vertical_frame_padding
-      padding = fetch_config['padding']
+      padding_from_config('padding', :vertical)
+    end
+
+    # Horizontal padding around the title
+    def horizontal_frame_title_padding
+      padding_from_config('title_padding', :horizontal, horizontal_frame_padding)
+    end
+
+    # Vertical padding around the title
+    def vertical_frame_title_padding
+      padding_from_config('title_padding', :vertical, vertical_frame_padding)
+    end
+
+    def padding_from_config(config, direction, fallback = 0)
+      padding = fetch_config[config]
+      return fallback if padding.nil?
+      dimension_index = direction == :horizontal ? 0 : 1
       if padding.kind_of?(String) && padding.split('x').length == 2
-        padding = padding.split('x')[1].to_i
+        padding = padding.split('x')[dimension_index].to_i
       end
       return scale_padding(padding)
     end
@@ -206,7 +218,7 @@ module Frameit
 
     def resize_text(text)
       width = text.width
-      ratio = (width + (keyword_padding + horizontal_frame_padding) * 2) / image.width.to_f
+      ratio = (width + (keyword_padding + horizontal_frame_title_padding) * 2) / image.width.to_f
       if ratio > 1.0
         # too large - resizing now
         smaller = (1.0 / ratio)
@@ -224,13 +236,14 @@ module Frameit
 
       vertical_padding = vertical_frame_padding
       keyword_top_space = vertical_padding
+      vertical_title_padding = vertical_frame_title_padding
 
       spacing_between_title_and_keyword = (title.height / 2)
-      title_top_space = vertical_padding + keyword.height + spacing_between_title_and_keyword
+      title_top_space = vertical_title_padding + keyword.height + spacing_between_title_and_keyword
       title_left_space = (background.width / 2.0 - title_width / 2.0).round
       keyword_left_space = (background.width / 2.0 - keyword_width / 2.0).round
 
-      self.space_to_device += title.height + keyword.height + spacing_between_title_and_keyword + vertical_padding
+      self.space_to_device += title.height + keyword.height + spacing_between_title_and_keyword + vertical_title_padding
       title_below_image = fetch_config['title_below_image']
       # keyword
       background = background.composite(keyword, "png") do |c|
@@ -249,7 +262,7 @@ module Frameit
     end
 
     def put_title_into_background(background, stack_title)
-      title_images = build_title_images(image.width - 2 * horizontal_frame_padding, image.height - 2 * vertical_frame_padding)
+      title_images = build_title_images(image.width - 2 * horizontal_frame_title_padding, image.height - 2 * vertical_frame_title_padding)
 
       keyword = title_images[:keyword]
       title = title_images[:title]
@@ -265,7 +278,7 @@ module Frameit
 
       # Resize the 2 labels if necessary
       smaller = 1.0 # default
-      ratio = (sum_width + (keyword_padding + horizontal_frame_padding) * 2) / image.width.to_f
+      ratio = (sum_width + (keyword_padding + horizontal_frame_title_padding) * 2) / image.width.to_f
       if ratio > 1.0
         # too large - resizing now
         smaller = (1.0 / ratio)
@@ -277,12 +290,13 @@ module Frameit
         sum_width *= smaller
       end
 
-      vertical_padding = vertical_frame_padding
-      top_space = vertical_padding + (actual_font_size - title.height) / 2
+      vertical_title_padding = vertical_frame_title_padding
+
+      top_space = vertical_frame_title_padding + (actual_font_size - title.height) / 2
       left_space = (background.width / 2.0 - sum_width / 2.0).round
       title_below_image = fetch_config['title_below_image']
 
-      self.space_to_device += actual_font_size + vertical_padding
+      self.space_to_device += actual_font_size + vertical_title_padding
 
       # First, put the keyword on top of the screenshot, if we have one
       if keyword

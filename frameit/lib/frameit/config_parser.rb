@@ -58,6 +58,10 @@ module Frameit
       end
     end
 
+    def valid_padding?(padding_value)
+      padding_value.kind_of?(Integer) || padding_value.split('x').length == 2 || (padding_value.end_with?('%') && padding_value.to_f > 0)
+    end
+
     # Make sure the paths/colors are valid
     def validate_values(values)
       values.each do |key, value|
@@ -80,9 +84,9 @@ module Frameit
           when 'color'
             UI.user_error!("Invalid color '#{value}'. Must be valid Hex #123123") unless value.include?("#")
           when 'padding'
-            unless value.kind_of?(Integer) || value.split('x').length == 2 || (value.end_with?('%') && value.to_f > 0)
-              UI.user_error!("padding must be type integer or pair of integers of format 'AxB' or a percentage of screen size")
-            end
+            UI.user_error!("padding must be type integer or pair of integers of format 'AxB' or a percentage of screen size") unless valid_padding?(value)
+          when 'title_padding'
+            UI.user_error!("title padding must be type integer or pair of integers of format 'AxB' or a percentage of screen size") unless valid_padding?(value)
           when 'show_complete_frame', 'title_below_image'
             UI.user_error! "'#{key}' must be a Boolean" unless [true, false].include?(value)
           when 'font_scale_factor'
