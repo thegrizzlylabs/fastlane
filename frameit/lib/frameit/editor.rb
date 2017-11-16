@@ -272,28 +272,27 @@ module Frameit
       sum_width = title.width
       sum_width += keyword.width + keyword_padding if keyword
 
-      title_below_image = fetch_config['title_below_image']
-
-      # Resize the 2 labels if they exceed the available space either horizontally or vertically:
-      image_scale_factor = 1.0 # default
-      ratio_horizontal = sum_width / (image.width.to_f - horizontal_frame_padding * 2) # The fraction of the text images compared to the left and right padding
-      ratio_vertical = title.height.to_f / actual_font_size # The fraction of the actual height of the images compared to the available space
-      if ratio_horizontal > 1.0 || ratio_vertical > 1.0
-        # If either is too large, resize with the maximum ratio:
-        image_scale_factor = (1.0 / [ratio_horizontal, ratio_vertical].max)
+      # Resize the 2 labels if necessary
+      smaller = 1.0 # default
+      ratio = (sum_width + (keyword_padding + horizontal_frame_padding) * 2) / image.width.to_f
+      title_height = title.height
+      if ratio > 1.0
+        # too large - resizing now
+        smaller = (1.0 / ratio)
 
         UI.verbose("Text for image #{self.screenshot.path} is quite long, reducing font size by #{(100 * (1.0 - image_scale_factor)).round(1)}%")
 
-        title.resize("#{(image_scale_factor * title.width).round}x")
-        keyword.resize("#{(image_scale_factor * keyword.width).round}x") if keyword
-        sum_width *= image_scale_factor
+        title.resize "#{(smaller * title.width).round}x"
+        keyword.resize "#{(smaller * keyword.width).round}x" if keyword
+        title_height *= smaller
+        sum_width *= smaller
       end
 
-      vertical_padding = vertical_frame_padding # assign padding to variable
-      top_space = vertical_padding + (actual_font_size - title.height) / 2
+      vertical_padding = vertical_frame_padding
+      top_space = vertical_padding
       left_space = (background.width / 2.0 - sum_width / 2.0).round
 
-      self.space_to_device += actual_font_size + vertical_padding
+      self.space_to_device += title_height + vertical_padding
 
       # First, put the keyword on top of the screenshot, if we have one
       if keyword
